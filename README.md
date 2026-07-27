@@ -20,9 +20,9 @@ InternTrack solves this problem by providing a centralized dashboard where stude
 
 # Live Demo
 
-**Live Application:** https://interntrack.vercel.app
+**Live Application:** [interntrack.vercel.app](https://intern-tracker-seven.vercel.app/)
 
-**GitHub Repository:** https://github.com/hassaannn09/InternTracker
+**GitHub Repository:** [github.com/hassaannn09/InternTracker/](github.com/hassaannn09/InternTracker/)
 
 ---
 
