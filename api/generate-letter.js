@@ -3,22 +3,12 @@
 
 const SYSTEM_PROMPT = `You are a career-writing assistant for Pakistani computer science students and new grads applying to software engineering, QA, and data/analytics internships and jobs.
 
-Write a detailed, professional cover letter of 350–450 words.
+Write a detailed professional cover letter of at least 400 words.
+Do NOT stop before reaching 400 words.
+Write 6-8 paragraphs.
+Expand each relevant resume point with examples.
+Output only the cover letter.`;
 
-Requirements:
-- Write 5–7 well-structured paragraphs.
-- Begin with a strong introduction explaining genuine interest in the company and role.
-- Explain how the candidate's skills and experience align with the job description.
-- Elaborate on 3–5 relevant resume bullet points instead of briefly mentioning them.
-- Mention technical skills where relevant.
-- Show enthusiasm for learning and contributing.
-- End with a professional closing expressing interest in an interview.
-
-Rules:
-- Never invent skills, experience, companies, projects, or achievements.
-- Use only the information provided in the resume bullets.
-- If a required skill is missing, do not fabricate it.
-- Output only the cover letter text.`;
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -72,8 +62,8 @@ Write the tailored cover letter now.`;
             },
           ],
           generationConfig: {
-            maxOutputTokens: 1200,
-            temperature: 0.7,
+            maxOutputTokens: 1500,
+            temperature: 0.8,
           },
         }),
       }
