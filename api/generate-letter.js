@@ -1,7 +1,5 @@
 // Vercel Serverless Function (Node.js runtime)
-// POST /api/generate-letter
-// Body: { company, role, jobDescription, resumeBullets }
-// Calls Google's Gemini API server-side so the API key is never exposed to the browser.
+// Keeps the Gemini API key server-side only — never exposed to the browser.
 
 const SYSTEM_PROMPT = `You are a career-writing assistant for Pakistani computer science students and new grads applying to software engineering, QA, and data/analytics internships and jobs.
 
@@ -27,25 +25,25 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    res.status(500).json({ error: "Server is missing GEMINI_API_KEY. Add it in Vercel → Project → Settings → Environment Variables, then redeploy." });
-    return;
-  }
-
   const { company, role, jobDescription, resumeBullets } = req.body || {};
 
   if (!resumeBullets || !resumeBullets.trim()) {
-    res.status(400).json({ error: "No resume bullets provided." });
+    res.status(400).json({ error: "Missing resume bullets." });
     return;
   }
   if (!jobDescription || !jobDescription.trim()) {
-    res.status(400).json({ error: "This application has no job description attached." });
+    res.status(400).json({ error: "Missing job description." });
     return;
   }
 
-  const userMessage = `Company: ${company || "Unknown"}
-Role: ${role || "Unknown"}
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: "Server is missing GEMINI_API_KEY." });
+    return;
+  }
+
+  const userMessage = `Company: ${company || "N/A"}
+Role: ${role || "N/A"}
 
 Job description:
 ${jobDescription}
@@ -53,16 +51,17 @@ ${jobDescription}
 My resume bullet points:
 ${resumeBullets}
 
-Write the cover letter now.`;
+Write the tailored cover letter now.`;
 
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    const model = "gemini-2.5-flash";
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: {
+          systemInstruction: {
             parts: [{ text: SYSTEM_PROMPT }],
           },
           contents: [
@@ -72,30 +71,34 @@ Write the cover letter now.`;
             },
           ],
           generationConfig: {
-            temperature: 0.7,
             maxOutputTokens: 700,
+            temperature: 0.7,
           },
         }),
       }
     );
 
-    const data = await geminiRes.json();
-
-    if (!geminiRes.ok) {
-      const message = data?.error?.message || `Gemini request failed (${geminiRes.status})`;
-      res.status(502).json({ error: message });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Gemini API error:", errText);
+      res.status(502).json({ error: "AI provider request failed." });
       return;
     }
 
-    const letter = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("").trim();
+    const data = await response.json();
+    const letter = (data.candidates?.[0]?.content?.parts || [])
+      .map((p) => p.text || "")
+      .join("\n")
+      .trim();
 
     if (!letter) {
-      res.status(502).json({ error: "Gemini returned an empty response. Try regenerating." });
+      res.status(502).json({ error: "AI returned an empty response." });
       return;
     }
 
     res.status(200).json({ letter });
   } catch (err) {
-    res.status(500).json({ error: "Unexpected server error: " + err.message });
+    console.error(err);
+    res.status(500).json({ error: "Unexpected server error." });
   }
 };
