@@ -63,7 +63,7 @@ Write the tailored cover letter now.`;
           ],
           generationConfig: {
             maxOutputTokens: 1500,
-            temperature: 0.8,
+            temperature: 0.5,
           },
         }),
       }
