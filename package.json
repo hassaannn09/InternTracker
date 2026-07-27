@@ -1,0 +1,9 @@
+{
+  "name": "interntrack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application tracker with AI-generated tailored cover letters, for CS students in Pakistan.",
+  "engines": {
+    "node": ">=18"
+  }
+}

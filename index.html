@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InternTrack — Application Tracker + AI Cover Letters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">IT</span>
+    <div>
+      <h1>InternTrack</h1>
+      <p>Application tracker &amp; AI cover letter writer for CS students</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button id="openResumeBtn" class="btn btn-ghost">My Resume Bullets</button>
+    <button id="openAddBtn" class="btn btn-primary">+ Add Application</button>
+  </div>
+</header>
+
+<main class="stats-row" id="statsRow"></main>
+
+<main class="board" id="board">
+  <!-- columns injected by app.js -->
+</main>
+
+<footer class="footer">
+  <p>Data is stored only in your browser (localStorage). Nothing is sent anywhere except job descriptions you choose to submit for a cover letter.</p>
+</footer>
+
+<!-- Add / Edit Application Modal -->
+<div class="modal-overlay" id="appModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="appModalTitle">Add Application</h2>
+      <button class="modal-close" data-close="appModalOverlay">&times;</button>
+    </div>
+    <form id="appForm">
+      <input type="hidden" id="appId">
+      <label>Company
+        <input type="text" id="companyInput" required placeholder="e.g. Systems Limited">
+      </label>
+      <label>Role
+        <input type="text" id="roleInput" required placeholder="e.g. Data Analyst Intern">
+      </label>
+      <div class="form-row">
+        <label>Status
+          <select id="statusInput">
+            <option value="applied">Applied</option>
+            <option value="assessment">OA / Assessment</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label>Date Applied
+          <input type="date" id="dateInput">
+        </label>
+      </div>
+      <label>Job Link
+        <input type="url" id="linkInput" placeholder="https://...">
+      </label>
+      <label>Job Description (used for AI cover letter)
+        <textarea id="jdInput" rows="4" placeholder="Paste the job description here..."></textarea>
+      </label>
+      <label>Notes
+        <textarea id="notesInput" rows="2" placeholder="Referral, recruiter name, follow-up date..."></textarea>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn btn-danger" id="deleteAppBtn" style="display:none;">Delete</button>
+        <div class="spacer"></div>
+        <button type="button" class="btn btn-ghost" data-close="appModalOverlay">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Resume Bullets Modal -->
+<div class="modal-overlay" id="resumeModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>My Resume Bullets</h2>
+      <button class="modal-close" data-close="resumeModalOverlay">&times;</button>
+    </div>
+    <p class="hint">Paste your resume's experience/skills bullet points below. The AI will only use facts from here when writing cover letters — nothing invented.</p>
+    <textarea id="resumeBullets" rows="10" placeholder="- Built a QA automation suite using Selenium and Python, reducing manual regression testing time by 40%&#10;- Analyzed logistics data in SQL/Excel to flag shipment delays for the ops team&#10;- Proficient in Python, SQL, JavaScript, React, FastAPI, scikit-learn"></textarea>
+    <div class="form-actions">
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="saveResumeBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Cover Letter Modal -->
+<div class="modal-overlay" id="letterModalOverlay">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2>AI Cover Letter — <span id="letterCompanyRole"></span></h2>
+      <button class="modal-close" data-close="letterModalOverlay">&times;</button>
+    </div>
+    <div id="letterBody">
+      <p class="hint">Generating a tailored cover letter using your saved resume bullets and this job's description...</p>
+      <div class="spinner"></div>
+    </div>
+    <textarea id="letterOutput" rows="14" style="display:none;"></textarea>
+    <div class="form-actions" id="letterActions" style="display:none;">
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="regenLetterBtn">Regenerate</button>
+      <button class="btn btn-primary" id="copyLetterBtn">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
