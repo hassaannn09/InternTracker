@@ -54,7 +54,7 @@ ${resumeBullets}
 Write the tailored cover letter now.`;
 
   try {
-    const model = "gemini-2.5-flash";
+    const model = "gemini-2.0-flash";
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
