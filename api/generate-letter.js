@@ -1,5 +1,7 @@
 // Vercel Serverless Function (Node.js runtime)
-// Keeps the Gemini API key server-side only — never exposed to the browser.
+// POST /api/generate-letter
+// Body: { company, role, jobDescription, resumeBullets }
+// Calls Google's Gemini API server-side so the API key is never exposed to the browser.
 
 const SYSTEM_PROMPT = `You are a career-writing assistant for Pakistani computer science students and new grads applying to software engineering, QA, and data/analytics internships and jobs.
 
@@ -19,31 +21,31 @@ Hard rules:
 - Do not include a letterhead, date, or "Dear Hiring Manager" boilerplate block — start directly with the opening line of the letter body.
 - Output ONLY the letter text. No preamble, no notes, no markdown formatting, no quotation marks around it.`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: "Server is missing GEMINI_API_KEY. Add it in Vercel → Project → Settings → Environment Variables, then redeploy." });
     return;
   }
 
   const { company, role, jobDescription, resumeBullets } = req.body || {};
 
   if (!resumeBullets || !resumeBullets.trim()) {
-    res.status(400).json({ error: "Missing resume bullets." });
+    res.status(400).json({ error: "No resume bullets provided." });
     return;
   }
   if (!jobDescription || !jobDescription.trim()) {
-    res.status(400).json({ error: "Missing job description." });
+    res.status(400).json({ error: "This application has no job description attached." });
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    res.status(500).json({ error: "Server is missing GEMINI_API_KEY." });
-    return;
-  }
-
-  const userMessage = `Company: ${company || "N/A"}
-Role: ${role || "N/A"}
+  const userMessage = `Company: ${company || "Unknown"}
+Role: ${role || "Unknown"}
 
 Job description:
 ${jobDescription}
@@ -51,17 +53,16 @@ ${jobDescription}
 My resume bullet points:
 ${resumeBullets}
 
-Write the tailored cover letter now.`;
+Write the cover letter now.`;
 
   try {
-    const model = "gemini-2.5-flash";
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemInstruction: {
+          system_instruction: {
             parts: [{ text: SYSTEM_PROMPT }],
           },
           contents: [
@@ -71,34 +72,30 @@ Write the tailored cover letter now.`;
             },
           ],
           generationConfig: {
-            maxOutputTokens: 700,
             temperature: 0.7,
+            maxOutputTokens: 700,
           },
         }),
       }
     );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Gemini API error:", errText);
-      res.status(502).json({ error: "AI provider request failed." });
+    const data = await geminiRes.json();
+
+    if (!geminiRes.ok) {
+      const message = data?.error?.message || `Gemini request failed (${geminiRes.status})`;
+      res.status(502).json({ error: message });
       return;
     }
 
-    const data = await response.json();
-    const letter = (data.candidates?.[0]?.content?.parts || [])
-      .map((p) => p.text || "")
-      .join("\n")
-      .trim();
+    const letter = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("").trim();
 
     if (!letter) {
-      res.status(502).json({ error: "AI returned an empty response." });
+      res.status(502).json({ error: "Gemini returned an empty response. Try regenerating." });
       return;
     }
 
     res.status(200).json({ letter });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Unexpected server error." });
+    res.status(500).json({ error: "Unexpected server error: " + err.message });
   }
-}
+};

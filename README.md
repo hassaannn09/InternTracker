@@ -32,7 +32,7 @@ Applying for internships and jobs as a CS student in Pakistan means juggling app
 
 **What it does:** given a job description and the user's own saved resume bullet points, the AI writes a 180–260 word cover letter tailored to that specific role — picking the 2–3 most relevant bullets and explaining the fit in plain language, instead of a generic template.
 
-**Model used:** Claude (Anthropic API, `claude-sonnet-4-6`), called from a server-side Vercel function (`/api/generate-letter.js`) so the API key is never exposed in the browser.
+**Model used:** Google Gemini (`gemini-2.5-flash`), called from a server-side Vercel function (`/api/generate-letter.js`) so the API key is never exposed in the browser.
 
 **System prompt used (verbatim, from `api/generate-letter.js`):**
 
@@ -63,7 +63,7 @@ The "never invent facts" rule is the important design decision here: the letter 
 - **Frontend:** plain HTML, CSS, JavaScript (no framework, no build step)
 - **Font:** Poppins (Google Fonts)
 - **Backend:** a single Vercel Serverless Function (`api/generate-letter.js`, Node.js runtime)
-- **AI model:** Gemino (`gemini-2.5-flash`) via the Gemini Messages API
+- **AI model:** Google Gemini (`gemini-2.5-flash`) via the Gemini API
 - **Storage:** browser `localStorage` (no database)
 - **Hosting/deployment:** Vercel
 
@@ -93,7 +93,7 @@ Then open the local URL Vercel prints (usually `http://localhost:3000`).
 ### Deploy your own copy
 1. Push this repo to your own public GitHub account.
 2. Go to [vercel.com](https://vercel.com) → **New Project** → import the repo.
-3. In the project's **Settings → Environment Variables**, add `ANTHROPIC_API_KEY` with your own Anthropic API key.
+3. In the project's **Settings → Environment Variables**, add `GEMINI_API_KEY` with your own Gemini API key (get one at [aistudio.google.com](https://aistudio.google.com/apikey)).
 4. Deploy. Vercel automatically detects the `/api` folder as serverless functions and serves `index.html` as the static site — no build configuration needed.
 
 ---
